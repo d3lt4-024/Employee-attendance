@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+
+RewriteRule ^(.+)$ index.php?url=$1
+
+ErrorDocument 403 /page-error-403.html
+ErrorDocument 404 /page-error-404.html
+ErrorDocument 500 /page-error-500.html
+ErrorDocument 503 /page-error-503.html
