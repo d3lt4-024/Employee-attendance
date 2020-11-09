@@ -4,7 +4,7 @@ Simple employee attendance Web application project.
 </br>
 Language: PHP, Javascript
 </br>
-Database: MySQL.
+Database: MySQL
 </br>
 Front-end Template: Oscar - HTML Bootstrap 4 Admin Template
 # Application Requirements
@@ -12,6 +12,5 @@ Front-end Template: Oscar - HTML Bootstrap 4 Admin Template
 2. MySQL
 </br>
 # Installation Instructions
-1. Clone it.
-</br>
+1. Clone it
 2. Create MySQL database and restore database from [this](/Employee-attendance/backup_db.sql)
