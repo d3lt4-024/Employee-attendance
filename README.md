@@ -13,4 +13,4 @@ Front-end Template: Oscar - HTML Bootstrap 4 Admin Template
 
 # Installation Instructions
 1. Clone it
-2. Create MySQL database and restore database from [this](/Employee-attendance/backup_db.sql)
+2. Create MySQL database and restore database from [this](/backup_db.sql)
