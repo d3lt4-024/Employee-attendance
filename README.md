@@ -9,7 +9,6 @@ Database: MySQL.
 Front-end Template: Oscar - HTML Bootstrap 4 Admin Template
 # Application Requirements
 1. PHP 5.1.0 or above
-</br>
 2. MySQL
 </br>
 # Installation Instructions
