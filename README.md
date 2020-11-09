@@ -32,3 +32,4 @@ Front-end Template: [Oscar - HTML Bootstrap 4 Admin Template](https://themefores
 # Note:
 1. Read code carefully to understand regex fillter in Add ... Function.
 2. I don't know when I will fix the above 2 bugs because of laziness.
+3. Because I don't know well about Javascript so some function in front-end will very stupid :( 
