@@ -5,7 +5,7 @@ Language: PHP, Javascript
 </br>
 Database: MySQL
 </br>
-Front-end Template: Oscar - HTML Bootstrap 4 Admin Template
+Front-end Template: [Oscar - HTML Bootstrap 4 Admin Template](https://themeforest.net/item/oscar-the-ultimate-bootstrap-admin-template/20324506)
 
 # Application Requirements
 1. PHP 5.1.0 or above
