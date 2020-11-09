@@ -1,7 +1,7 @@
 # Employee Attendance Web Application.
 Simple employee attendance Web application project.
 </br>
-Language: PHP, Javascript
+Language: PHP MVC, Javascript
 </br>
 Database: MySQL
 </br>
