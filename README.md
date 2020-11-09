@@ -10,6 +10,7 @@ Front-end Template: [Oscar - HTML Bootstrap 4 Admin Template](https://themefores
 # Application Requirements
 1. PHP 5.1.0 or above
 2. MySQL
+3. Apache Server
 
 # Installation Instructions
 1. Clone it
