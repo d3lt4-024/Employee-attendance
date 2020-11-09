@@ -1,7 +1,10 @@
 # Employee Attendance Web Application.
-Simple employee attendance Web application project. 
+Simple employee attendance Web application project.
+</br>
 Language: PHP, Javascript
+</br>
 Database: MySQL
+</br>
 Front-end Template: Oscar - HTML Bootstrap 4 Admin Template
 
 # Application Requirements
