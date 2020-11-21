@@ -26,7 +26,7 @@ Front-end Template: [Oscar - HTML Bootstrap 4 Admin Template](https://themefores
 5. Admin can: Check User online/offline, Accept leave day form from Manager in Department, Manage all Manager and Employee
 
 # Bug and Incomplete Function
-1. Bug in Edit information function. Password field will show md5 of password as default value
+1. Bug in Edit information function. Password field will show sha256 of password as default value
 2. Bug in Access Control. Manager in Department A can accpet leave day form form Employee in Department B.
 
 # Note:
