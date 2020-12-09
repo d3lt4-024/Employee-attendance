@@ -38,13 +38,9 @@ class create_form extends Controller
                     "user_info" => $user_info
                 ]);
                 exit();
-            } else if ($_SESSION["permission"] === "manager" || $_SESSION["permission"] === "employee") {
+            } else {
                 http_response_code(403);
                 header('Location: /page-error-403.html');
-                exit();
-            } else {
-                http_response_code(500);
-                header('Location: /page-error-500.html');
                 exit();
             }
         } else {
@@ -65,13 +61,9 @@ class create_form extends Controller
                     "user_info" => $user_info
                 ]);
                 exit();
-            } else if ($_SESSION["permission"] === "manager" || $_SESSION["permission"] === "employee") {
+            } else {
                 http_response_code(403);
                 header('Location: /page-error-403.html');
-                exit();
-            } else {
-                http_response_code(500);
-                header('Location: /page-error-500.html');
                 exit();
             }
         } else {

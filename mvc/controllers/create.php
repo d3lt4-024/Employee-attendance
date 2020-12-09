@@ -84,8 +84,21 @@ class create extends Controller
                             if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày sinh không hợp lệ");
                             }
+                            //check valid username, email, employee ID
+                            if ($this->Manager->CheckValidEmployeeID(trim($_POST['EmployeeID'])) === true) {
+                                throw new Exception("ID nhân viên đã được sử dụng");
+                            }
+                            if ($this->User->CheckValidUsername(trim($_POST['Username'])) === true) {
+                                throw new Exception("Username đã được sử dụng");
+                            }
+                            if ($this->User->CheckValidUsername(trim($_POST['Email'])) === true) {
+                                throw new Exception("Email đã được sử dụng");
+                            }
+                            if (trim($_POST['EmployeeID']) !== trim($_POST['Username'])) {
+                                throw new Exception("Username phải là ID nhân viên");
+                            }
                             //delete space and special char in form data
-                            $EmployeeID = trim(($_POST['EmployeeID']));
+                            $EmployeeID = trim($_POST['EmployeeID']);
                             $Name = trim($_POST['Name']);
                             $Email = trim($_POST['Email']);
                             $PhoneNum = trim($_POST['PhoneNum']);
@@ -126,10 +139,6 @@ class create extends Controller
                         header('Location: /page-error-500.html');
                         exit();
                     }
-                } else if ($_SESSION["permission"] === "manager" || $_SESSION["permission"] === "employee") {
-                    http_response_code(403);
-                    header('Location: /page-error-403.html');
-                    exit();
                 } else {
                     http_response_code(403);
                     header('Location: /page-error-403.html');
@@ -214,8 +223,21 @@ class create extends Controller
                             if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày sinh không hợp lệ");
                             }
+                            //check valid username, email
+                            if ($this->Employee->CheckValidEmployeeID(trim($_POST['EmployeeID'])) === true) {
+                                throw new Exception("ID nhân viên đã được sử dụng");
+                            }
+                            if ($this->User->CheckValidUsername(trim($_POST['Username'])) === true) {
+                                throw new Exception("Username đã được sử dụng");
+                            }
+                            if ($this->User->CheckValidUsername(trim($_POST['Email'])) === true) {
+                                throw new Exception("Email đã được sử dụng");
+                            }
+                            if (trim($_POST['EmployeeID']) !== trim($_POST['Username'])) {
+                                throw new Exception("Username phải là ID nhân viên");
+                            }
                             //delete space and special char in form data
-                            $EmployeeID = trim(($_POST['EmployeeID']));
+                            $EmployeeID = trim($_POST['EmployeeID']);
                             $Name = trim($_POST['Name']);
                             $Email = trim($_POST['Email']);
                             $PhoneNum = trim($_POST['PhoneNum']);
@@ -255,10 +277,6 @@ class create extends Controller
                         header('Location: /page-error-500.html');
                         exit();
                     }
-                } else if ($_SESSION["permission"] === "manager" || $_SESSION["permission"] === "employee") {
-                    http_response_code(403);
-                    header('Location: /page-error-403.html');
-                    exit();
                 } else {
                     http_response_code(403);
                     header('Location: /page-error-403.html');
@@ -281,9 +299,9 @@ class create extends Controller
 
     function leave_day_form($IdForm)
     {
-        if ($this->User->CheckValidForm($IdForm) === false) {
+        if ($this->Leave_Day_Form->CheckValidForm($IdForm) === false) {
             if (isset($_SESSION["permission"])) {
-                if ($_SESSION["permission"] === "manager") {
+                if ($_SESSION["permission"] === "manager" || $_SESSION["permission"] === "employee") {
                     if (isset($_POST["submit"])) {
                         try {
                             //check empty field
@@ -335,60 +353,9 @@ class create extends Controller
                         header('Location: /page-error-500.html');
                         exit();
                     }
-                } else if ($_SESSION["permission"] === "employee") {
-                    if (isset($_POST["submit"])) {
-                        try {
-                            //check empty field
-                            if (empty($_POST['Start_Date'])) {
-                                throw new Exception("Không được để trống ngày bắt đầu");
-                            }
-                            if (empty($_POST['End_Date'])) {
-                                throw new Exception("Không được để trống ngày kết thúc");
-                            }
-                            if (empty($_POST['Reason'])) {
-                                throw new Exception("Lý do không được để trống");
-                            }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Start_Date'] === false)) {
-                                throw new Exception("Ngày bắt đầu không hợp lệ");
-                            }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['End_Date'] === false)) {
-                                throw new Exception("Ngày kết thúc không hợp lệ");
-                            }
-                            //delete space and special char in form data
-                            $IdAccount_Employess = $_SESSION["user_id"];
-                            $IdForm = $this->Leave_Day_Form->GetMaxFormId()[0] + 1;
-                            $Start_Date = $this->reformat_date(trim($_POST['Start_Date']));
-                            $End_Date = $this->reformat_date(trim($_POST['End_Date']));
-                            $Reason = trim($_POST['Reason']);
-                            $create_result = $this->Leave_Day_Form->CreateForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
-                            if ($create_result === false) {
-                                echo '<script type="text/javascript">';
-                                echo 'alert("Có lỗi xảy ra, vui lòng thử lại!");';  //error messenge
-                                echo 'window.location.href = "javascript:history.back()";';
-                                echo '</script>';
-                                exit();
-                            } else {
-                                echo '<script type="text/javascript">';
-                                echo 'alert("Tạo đơn xin nghỉ phép thành công");';  //success messenge
-                                echo 'window.location.href = "/";'; //redirect to list teacher
-                                echo '</script>';
-                                exit();
-                            }
-                        } catch (Exception $e) {
-                            $error_msg = $e->getMessage();
-                        }
-                        $this->ViewWithPer("create-leave-day-form", "employee", [
-                            "error_msg" => $error_msg
-                        ]);
-                        exit();
-                    } else {
-                        http_response_code(500);
-                        header('Location: /page-error-500.html');
-                        exit();
-                    }
                 } else {
-                    http_response_code(500);
-                    header('Location: /page-error-500.html');
+                    http_response_code(403);
+                    header('Location: /page-error-403.html');
                     exit();
                 }
             } else {

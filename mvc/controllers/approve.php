@@ -32,7 +32,7 @@ class approve extends Controller
         if ($this->Leave_Day_Form->CheckValidForm($IdForm) === true) {
             if ($this->Leave_Day_Form->GetStatusForm($IdForm)["Form_Status"] === "Pending") {
                 if (isset($_SESSION["permission"])) {
-                    if ($_SESSION["permission"] === "admin") {
+                    if ($_SESSION["permission"] === "admin" || $_SESSION["permission"] === "manager") {
                         $approve_result = $this->Leave_Day_Form->ApproveForm($IdForm);
                         if ($approve_result === true) {
                             echo '<script type="text/javascript">';
@@ -47,25 +47,6 @@ class approve extends Controller
                             echo '</script>';
                             exit();
                         }
-                    } else if ($_SESSION["permission"] === "manager") {
-                        $approve_result = $this->Leave_Day_Form->ApproveForm($IdForm);
-                        if ($approve_result === true) {
-                            echo '<script type="text/javascript">';
-                            echo 'alert("Approve successful");';  //success messenge
-                            echo 'window.location.href = "javascript:history.back()";'; //redirect to list manager
-                            echo '</script>';
-                            exit();
-                        } else {
-                            echo '<script type="text/javascript">';
-                            echo 'alert("Something wrong, try again!");';  //success messenge
-                            echo 'window.location.href = "javascript:history.back()";'; //redirect to list manager
-                            echo '</script>';
-                            exit();
-                        }
-                    } else if ($_SESSION["permission"] === "employee") {
-                        http_response_code(403);
-                        header('Location: /page-error-403.html');
-                        exit();
                     } else {
                         http_response_code(500);
                         header('Location: /page-error-500.html');

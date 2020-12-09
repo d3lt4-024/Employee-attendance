@@ -29,7 +29,7 @@ class view extends Controller
 
     function manager($IdAccount)
     {
-        if ($this->User->CheckValidManager($IdAccount) === true) {
+        if ($this->Manager->CheckValidManager($IdAccount) === true) {
             if (isset($_SESSION["permission"])) {
                 if ($_SESSION["permission"] === "admin") {
                     $user_info = $this->User->GetInfoUserByID($_SESSION['user_id']);
@@ -39,10 +39,6 @@ class view extends Controller
                         "default" => $result1,
                         "user_info" => $user_info
                     ]);
-                } else if ($_SESSION['permission'] === "manager" || $_SESSION['permission'] === "employee") {
-                    http_response_code(403);
-                    header('Location: /page-error-403.html');
-                    exit();
                 } else {
                     http_response_code(403);
                     header('Location: /page-error-403.html');
@@ -63,7 +59,7 @@ class view extends Controller
 
     function employee($IdAccount)
     {
-        if ($this->User->CheckValidEmployee($IdAccount) === true) {
+        if ($this->Employee->CheckValidEmployee($IdAccount) === true) {
             if (isset($_SESSION["permission"])) {
                 if ($_SESSION["permission"] === "admin") {
                     $user_info = $this->User->GetInfoUserByID($_SESSION['user_id']);
@@ -82,10 +78,6 @@ class view extends Controller
                         "default" => $result1,
                         "user_info" => $user_info
                     ]);
-                    exit();
-                } else if ($_SESSION["permission"] === "employee") {
-                    http_response_code(403);
-                    header('Location: /page-error-403.html');
                     exit();
                 } else {
                     http_response_code(403);
@@ -106,7 +98,7 @@ class view extends Controller
 
     function leave_day_form($IdForm)
     {
-        if ($this->User->CheckValidForm($IdForm) === true) {
+        if ($this->Leave_Day_Form->CheckValidForm($IdForm) === true) {
             if (isset($_SESSION["permission"])) {
                 if ($_SESSION["permission"] === "manager") {
                     $result1 = $this->Leave_Day_Form->GetUserFromForm($IdForm);
@@ -150,7 +142,7 @@ class view extends Controller
 
     function department_leave_day_form($IdForm)
     {
-        if ($this->User->CheckValidForm($IdForm) === true) {
+        if ($this->Leave_Day_Form->CheckValidForm($IdForm) === true) {
             if (isset($_SESSION["permission"])) {
                 if ($_SESSION["permission"] === "manager") {
                     $user_info = $this->Manager->GetManagerWithId($_SESSION['user_id']);
@@ -167,10 +159,6 @@ class view extends Controller
                         "user_info" => $user_info,
                         "default" => $result2
                     ]);
-                    exit();
-                } else if ($_SESSION ["permission"] === "employee") {
-                    http_response_code(403);
-                    header('Location: /page-error-403.html');
                     exit();
                 } else {
                     http_response_code(403);

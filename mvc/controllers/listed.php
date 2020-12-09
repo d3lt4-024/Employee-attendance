@@ -37,10 +37,6 @@ class listed extends Controller
                     "user_info" => $user_info
                 ]); //if user is teacher
                 exit();
-            } else if ($_SESSION['permission'] === "manager" || $_SESSION['permission'] === "employee") {
-                http_response_code(403);
-                header('Location: /page-error-403.html');
-                exit();
             } else {
                 http_response_code(403);
                 header('Location: /page-error-403.html');
@@ -63,10 +59,6 @@ class listed extends Controller
                     "employee_list" => $result,
                     "user_info" => $user_info
                 ]); //if user is teacher
-                exit();
-            } else if ($_SESSION['permission'] === "manager" || $_SESSION['permission'] === "employee") {
-                http_response_code(403);
-                header('Location: /page-error-403.html');
                 exit();
             } else {
                 http_response_code(403);
@@ -138,10 +130,6 @@ class listed extends Controller
                         "user_info" => $user_info,
                         "lea_form_list" => $result
                     ]);
-                    exit();
-                } else if ($_SESSION["permission"] === "employee") {
-                    http_response_code(403);
-                    header('Location: /page-error-403.html');
                     exit();
                 } else {
                     http_response_code(403);
