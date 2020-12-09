@@ -90,6 +90,38 @@ class User extends Database
         }
     }
 
+    //check valid username
+    public function CheckValidUsername($Username)
+    {
+        $query = "SELECT * FROM Account WHERE Username=:username";
+        try {
+            $statement = $this->connect->prepare($query);
+            $statement->bindValue(':username', $Username, PDO::PARAM_STR);
+            $statement->execute();
+            $count = $statement->rowCount();
+            if ($count > 0) {
+                return true;
+            } else return false;
+        } catch (PDOException $e) {
+        }
+    }
+
+    //check valid email
+    public function CheckValidEmail($Email)
+    {
+        $query = "SELECT * FROM Account WHERE Email=:email";
+        try {
+            $statement = $this->connect->prepare($query);
+            $statement->bindValue(':email', $Email, PDO::PARAM_STR);
+            $statement->execute();
+            $count = $statement->rowCount();
+            if ($count > 0) {
+                return true;
+            } else return false;
+        } catch (PDOException $e) {
+        }
+    }
+
 //functions get info for api controller
     //get amount account online and offline.
     public function GetAccStateForJs()

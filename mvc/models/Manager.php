@@ -75,6 +75,22 @@ class Manager extends User
         }
     }
 
+    //check valid employee id
+    public function CheckValidEmployeeID($EmployeeID)
+    {
+        $query = "SELECT * FROM Employess WHERE Employess_Code=:id";
+        try {
+            $statement = $this->connect->prepare($query);
+            $statement->bindValue(':id', $EmployeeID, PDO::PARAM_STR);
+            $statement->execute();
+            $count = $statement->rowCount();
+            if ($count > 0) {
+                return true;
+            } else return false;
+        } catch (PDOException $e) {
+        }
+    }
+
 //functions get info for api controller
     //get salary in year
     public function GetYearSalary($IdAccount_Employess, $Year)

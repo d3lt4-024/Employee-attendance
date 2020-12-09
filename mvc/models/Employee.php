@@ -92,6 +92,22 @@ class Employee extends User
         }
     }
 
+    //check valid employee id
+    public function CheckValidEmployeeID($EmployeeID)
+    {
+        $query = "SELECT * FROM Employess WHERE Employess_Code=:id";
+        try {
+            $statement = $this->connect->prepare($query);
+            $statement->bindValue(':id', $EmployeeID, PDO::PARAM_STR);
+            $statement->execute();
+            $count = $statement->rowCount();
+            if ($count > 0) {
+                return true;
+            } else return false;
+        } catch (PDOException $e) {
+        }
+    }
+
 //functions create
     //create employee
     public function CreateEmployee($IdAccount, $Name, $Email, $PhoneNum, $Username, $Password, $Employess_Code, $Gender, $Hire_Date, $Job, $Birth_Date, $Department_Number)
