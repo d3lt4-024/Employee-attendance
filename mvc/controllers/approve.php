@@ -3,13 +3,21 @@
 
 class approve extends Controller
 {
-    public $User;
-    public $Manager;
+    private $User;
+    private $Manager;
+    private $Employee;
+    private $Admin;
+    private $Leave_Day_Form;
+    private $Department;
 
     public function __construct()
     {
         $this->User = $this->model("User");
         $this->Manager = $this->model("Manager");
+        $this->Employee = $this->model("Employee");
+        $this->Admin = $this->model("Admin");
+        $this->Leave_Day_Form = $this->model("Leave_Day_Form");
+        $this->Department = $this->model("Department");
     }
 
     function index()
@@ -21,11 +29,11 @@ class approve extends Controller
 
     function leave_day_form($IdForm)
     {
-        if ($this->User->CheckValidForm($IdForm) === true) {
-            if ($this->User->GetStatusForm($IdForm)["Form_Status"] === "Pending") {
+        if ($this->Leave_Day_Form->CheckValidForm($IdForm) === true) {
+            if ($this->Leave_Day_Form->GetStatusForm($IdForm)["Form_Status"] === "Pending") {
                 if (isset($_SESSION["permission"])) {
                     if ($_SESSION["permission"] === "admin") {
-                        $approve_result = $this->User->ApproveForm($IdForm);
+                        $approve_result = $this->Leave_Day_Form->ApproveForm($IdForm);
                         if ($approve_result === true) {
                             echo '<script type="text/javascript">';
                             echo 'alert("Approve successful");';  //success messenge
@@ -40,7 +48,7 @@ class approve extends Controller
                             exit();
                         }
                     } else if ($_SESSION["permission"] === "manager") {
-                        $approve_result = $this->Manager->ApproveForm($IdForm);
+                        $approve_result = $this->Leave_Day_Form->ApproveForm($IdForm);
                         if ($approve_result === true) {
                             echo '<script type="text/javascript">';
                             echo 'alert("Approve successful");';  //success messenge

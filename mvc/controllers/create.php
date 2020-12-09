@@ -6,12 +6,18 @@ class create extends Controller
     private $User;
     private $Manager;
     private $Employee;
+    private $Admin;
+    private $Leave_Day_Form;
+    private $Department;
 
     public function __construct()
     {
         $this->User = $this->model("User");
         $this->Manager = $this->model("Manager");
         $this->Employee = $this->model("Employee");
+        $this->Admin = $this->model("Admin");
+        $this->Leave_Day_Form = $this->model("Leave_Day_Form");
+        $this->Department = $this->model("Department");
     }
 
     function index()
@@ -29,9 +35,6 @@ class create extends Controller
                     if (isset($_POST["submit"])) {
                         try {
                             //check empty field
-                            if (intval($_POST['IdAccount']) !== intval($IdAccount)) {
-                                throw new Exception("ID tài khoản không khớp");
-                            }
                             if (empty($_POST['EmployeeID'])) {
                                 throw new Exception("ID Nhân viên không được để trống");
                             }
@@ -66,34 +69,36 @@ class create extends Controller
                                 throw new Exception("Password không được để trống");
                             }
                             //check form data
-                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) {
+                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) { //example: CN17AT0001
                                 throw new Exception("Username không hợp lệ");
                             }
-                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['EmployeeID']) === false) {
+                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['EmployeeID']) === false) { //example: CN17AT0001
                                 throw new Exception("ID Nhân viên không hợp lệ");
                             }
-                            if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) {
+                            if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) { //exmaple: 0856562876
                                 throw new Exception("Số điện thoại không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Hire_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Hire_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày bắt đầu làm việc không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày sinh không hợp lệ");
                             }
                             //delete space and special char in form data
-                            $IdAccount = trim($_POST['IdAccount']);
                             $EmployeeID = trim(($_POST['EmployeeID']));
                             $Name = trim($_POST['Name']);
                             $Email = trim($_POST['Email']);
                             $PhoneNum = trim($_POST['PhoneNum']);
                             $Gender = trim($_POST['Gender']);
-                            $Hire_Date = $this->reformat_date(trim($_POST['Hire_Date']));
+                            $Hire_Date = $this->reformat_date(trim($_POST['Hire_Date'])); //reformat date to yyyy-mm-dd
                             $Job = trim($_POST['Job']);
-                            $Birth_Date = $this->reformat_date(trim($_POST['Birth_Date']));
+                            $Birth_Date = $this->reformat_date(trim($_POST['Birth_Date'])); //reformat date to yyyy-mm-dd
+                            //get department id from department name
                             $this->Department = $this->model("Department");
                             $Department_Number = $this->Department->GetDeptFromName(trim($_POST['Department_Name']));
                             $Username = trim($_POST['Username']);
+                            //create id account for new account
+                            $IdAccount = $this->User->GetMaxAccountId()[0] + 1;
                             $Password = hash('sha-256', trim($_POST['Password']));
                             $create_result = $this->Manager->CreateManager($IdAccount, $Name, $Email, $PhoneNum, $Username, $Password, $EmployeeID, $Gender, $Hire_Date, $Job, $Birth_Date, $Department_Number[0]); //update profile in User table and GiaoVien table
                             if ($create_result === false) {
@@ -145,7 +150,7 @@ class create extends Controller
 
     }
 
-    private function reformat_date($date_before)
+    private function reformat_date($date_before) // reformat date to yyyy-mm-dd for insert to db
     {
         $dateArray = explode('/', $date_before);
         $date = $dateArray[2] . '-' . $dateArray[0] . '-' . $dateArray[1];
@@ -160,9 +165,6 @@ class create extends Controller
                     if (isset($_POST["submit"])) {
                         try {
                             //check empty field
-                            if (intval($_POST['IdAccount']) !== intval($IdAccount)) {
-                                throw new Exception("ID tài khoản không khớp");
-                            }
                             if (empty($_POST['EmployeeID'])) {
                                 throw new Exception("ID Nhân viên không được để trống");
                             }
@@ -197,35 +199,36 @@ class create extends Controller
                                 throw new Exception("Password không được để trống");
                             }
                             //check form data
-                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) {
+                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) { //example: CN17AT0001
                                 throw new Exception("Username không hợp lệ");
                             }
-                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['EmployeeID']) === false) {
+                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['EmployeeID']) === false) { //example: CN17AT0001
                                 throw new Exception("ID Nhân viên không hợp lệ");
                             }
-                            if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) {
+                            if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) { //example: 0856562876
                                 throw new Exception("Số điện thoại không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Hire_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Hire_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày bắt đầu làm việc không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày sinh không hợp lệ");
                             }
                             //delete space and special char in form data
-                            $IdAccount = trim($_POST['IdAccount']);
                             $EmployeeID = trim(($_POST['EmployeeID']));
                             $Name = trim($_POST['Name']);
                             $Email = trim($_POST['Email']);
                             $PhoneNum = trim($_POST['PhoneNum']);
                             $Gender = trim($_POST['Gender']);
-                            $Hire_Date = $this->reformat_date(trim($_POST['Hire_Date']));
+                            $Hire_Date = $this->reformat_date(trim($_POST['Hire_Date'])); //reformat date to yyyy-mm-dd
                             $Job = trim($_POST['Job']);
-                            $Birth_Date = $this->reformat_date(trim($_POST['Birth_Date']));
+                            $Birth_Date = $this->reformat_date(trim($_POST['Birth_Date'])); //reformat date to yyyy-mm-dd
                             $this->Department = $this->model("Department");
                             $Department_Number = $this->Department->GetDeptFromName(trim($_POST['Department_Name']));
                             $Username = trim($_POST['Username']);
                             $Password = hash('sha256', trim($_POST['Password']));
+                            //create id account for new account
+                            $IdAccount = $this->User->GetMaxAccountId()[0] + 1;
                             $create_result = $this->Employee->CreateEmployee($IdAccount, $Name, $Email, $PhoneNum, $Username, $Password, $EmployeeID, $Gender, $Hire_Date, $Job, $Birth_Date, $Department_Number[0]); //update profile in User table and GiaoVien table
                             if ($create_result === false) {
                                 echo '<script type="text/javascript">';
@@ -284,9 +287,6 @@ class create extends Controller
                     if (isset($_POST["submit"])) {
                         try {
                             //check empty field
-                            if ($_POST['IdForm'] !== $IdForm) {
-                                throw new Exception("ID Đơn không khớp");
-                            }
                             if (empty($_POST['Start_Date'])) {
                                 throw new Exception("Không được để trống ngày bắt đầu");
                             }
@@ -297,19 +297,19 @@ class create extends Controller
                                 throw new Exception("Lý do không được để trống");
                             }
                             //check form data
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Start_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Start_Date'] === false)) { //yyyy-mm-dd
                                 throw new Exception("Ngày bắt đầu không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['End_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['End_Date'] === false)) { //yyyy-mm-dd
                                 throw new Exception("Ngày kết thúc không hợp lệ");
                             }
                             //delete space and special char in form data
                             $IdAccount_Employess = $_SESSION["user_id"];
-                            $IdForm = trim(($_POST['IdForm']));
-                            $Start_Date = $this->reformat_date(trim($_POST['Start_Date']));
-                            $End_Date = $this->reformat_date(trim($_POST['End_Date']));
+                            $IdForm = $this->Leave_Day_Form->GetMaxFormId()[0] + 1;
+                            $Start_Date = $this->reformat_date(trim($_POST['Start_Date'])); //reformat to yyyy-mm-dd
+                            $End_Date = $this->reformat_date(trim($_POST['End_Date'])); //reformat to yyyy-mm-dd
                             $Reason = trim($_POST['Reason']);
-                            $create_result = $this->Manager->CreateForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
+                            $create_result = $this->Leave_Day_Form->CreateForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
                             if ($create_result === false) {
                                 echo '<script type="text/javascript">';
                                 echo 'alert("Có lỗi xảy ra, vui lòng thử lại!");';  //error messenge
@@ -339,9 +339,6 @@ class create extends Controller
                     if (isset($_POST["submit"])) {
                         try {
                             //check empty field
-                            if ($_POST['IdForm'] !== $IdForm) {
-                                throw new Exception("ID Đơn không khớp");
-                            }
                             if (empty($_POST['Start_Date'])) {
                                 throw new Exception("Không được để trống ngày bắt đầu");
                             }
@@ -359,11 +356,11 @@ class create extends Controller
                             }
                             //delete space and special char in form data
                             $IdAccount_Employess = $_SESSION["user_id"];
-                            $IdForm = trim(($_POST['IdForm']));
+                            $IdForm = $this->Leave_Day_Form->GetMaxFormId()[0] + 1;
                             $Start_Date = $this->reformat_date(trim($_POST['Start_Date']));
                             $End_Date = $this->reformat_date(trim($_POST['End_Date']));
                             $Reason = trim($_POST['Reason']);
-                            $create_result = $this->Employee->CreateForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
+                            $create_result = $this->Leave_Day_Form->CreateForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
                             if ($create_result === false) {
                                 echo '<script type="text/javascript">';
                                 echo 'alert("Có lỗi xảy ra, vui lòng thử lại!");';  //error messenge

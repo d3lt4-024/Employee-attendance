@@ -6,6 +6,8 @@ class edit extends Controller
     private $User;
     private $Manager;
     private $Employee;
+    private $Admin;
+    private $Leave_Day_Form;
     private $Department;
 
     public function __construct()
@@ -13,6 +15,8 @@ class edit extends Controller
         $this->User = $this->model("User");
         $this->Manager = $this->model("Manager");
         $this->Employee = $this->model("Employee");
+        $this->Admin = $this->model("Admin");
+        $this->Leave_Day_Form = $this->model("Leave_Day_Form");
         $this->Department = $this->model("Department");
     }
 
@@ -25,15 +29,12 @@ class edit extends Controller
 
     function manager($IdAccount)
     {
-        if ($this->User->CheckValidManager($IdAccount) === true) {
+        if ($this->Manager->CheckValidManager($IdAccount) === true) {
             if (isset($_SESSION["permission"])) {
                 if ($_SESSION["permission"] === "admin") {
                     if (isset($_POST["submit"])) {
                         try {
                             //check empty field
-                            if (intval($_POST['IdAccount']) !== intval($IdAccount)) {
-                                throw new Exception("ID tài khoản không khớp");
-                            }
                             if (empty($_POST['EmployeeID'])) {
                                 throw new Exception("ID Nhân viên không được để trống");
                             }
@@ -65,35 +66,108 @@ class edit extends Controller
                                 throw new Exception("Username không được để trống");
                             }
                             //check form data
-                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) {
+                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) { //example: CN17AT0001
                                 throw new Exception("Username không hợp lệ");
                             }
-                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['EmployeeID']) === false) {
+                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['EmployeeID']) === false) { //example: CN17AT0001
                                 throw new Exception("ID Nhân viên không hợp lệ");
                             }
-                            if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) {
+                            if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) { //exmaple: 0856562876
                                 throw new Exception("Số điện thoại không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Hire_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Hire_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày bắt đầu làm việc không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày sinh không hợp lệ");
                             }
                             //delete space and special char in form data
-                            $IdAccount = trim($_POST['IdAccount']);
-                            $EmployeeID = trim(($_POST['EmployeeID']));
-                            $Name = trim($_POST['Name']);
-                            $Email = trim($_POST['Email']);
-                            $PhoneNum = trim($_POST['PhoneNum']);
-                            $Gender = trim($_POST['Gender']);
-                            $Hire_Date = $this->reformat_date(trim($_POST['Hire_Date']));
-                            $Job = trim($_POST['Job']);
-                            $Birth_Date = $this->reformat_date(trim($_POST['Birth_Date']));
-                            $Department_Number = $this->Department->GetDeptFromName(trim($_POST['Department_Name']));
-                            $Username = trim($_POST['Username']);
-                            $Password = hash('sha256', trim($_POST['Password']));
-                            $edit_result = $this->Manager->UpdateInfoManager($IdAccount, $Name, $Email, $PhoneNum, $Username, $Password, $EmployeeID, $Gender, $Hire_Date, $Job, $Birth_Date, $Department_Number[0]); //update profile in User table and GiaoVien table
+                            $IdAccount = $_SESSION["manager_edit"];
+                            $Post_EmployeeID = trim(($_POST['EmployeeID']));
+                            $Post_Name = trim($_POST['Name']);
+                            $Post_Email = trim($_POST['Email']);
+                            $Post_PhoneNum = trim($_POST['PhoneNum']);
+                            $Post_Gender = trim($_POST['Gender']);
+                            $Post_Hire_Date = $this->reformat_date(trim($_POST['Hire_Date']));
+                            $Post_Job = trim($_POST['Job']);
+                            $Post_Birth_Date = $this->reformat_date(trim($_POST['Birth_Date']));
+                            $Post_Department_Number = $this->Department->GetDeptFromName(trim($_POST['Department_Name']));
+                            $Post_Username = trim($_POST['Username']);
+                            //value store what will be edited
+                            $EmployeeID = "";
+                            $Name = "";
+                            $Email = "";
+                            $PhoneNum = "";
+                            $Gender = "";
+                            $Hire_Date = "";
+                            $Job = "";
+                            $Birth_Date = "";
+                            $Department_Number = "";
+                            $Username = "";
+                            $Password = "";
+                            //check what is edited
+                            $default_info = $this->Manager->GetManagerWithId($IdAccount);
+                            if ($Post_EmployeeID !== $default_info["Username"]) {
+                                $EmployeeID = $Post_EmployeeID;
+                            } else {
+                                $EmployeeID = $default_info["Username"];
+                            }
+                            if ($Post_Name !== $default_info["Name"]) {
+                                $Name = $Post_Name;
+                            } else {
+                                $Name = $default_info["Name"];
+                            }
+                            if ($Post_Email !== $default_info["Email"]) {
+                                $Email = $Post_Email;
+                            } else {
+                                $Email = $default_info["Email"];
+                            }
+                            if ($Post_PhoneNum !== $default_info["PhoneNum"]) {
+                                $PhoneNum = $Post_PhoneNum;
+                            } else {
+                                $PhoneNum = $default_info["PhoneNum"];
+                            }
+                            if ($Post_Gender !== $default_info["Gender"]) {
+                                $Gender = $Post_Gender;
+                            } else {
+                                $Gender = $default_info["Gender"];
+                            }
+                            if ($Post_Hire_Date !== $default_info["Hire_Date"]) {
+                                $Hire_Date = $Post_Hire_Date;
+                            } else {
+                                $Hire_Date = $default_info["Hire_Date"];
+                            }
+                            if ($Post_Job !== $default_info["Job"]) {
+                                $Job = $Post_Job;
+                            } else {
+                                $Job = $default_info["Job"];
+                            }
+                            if ($Post_Birth_Date !== $default_info["Birth_Date"]) {
+                                $Birth_Date = $Post_Birth_Date;
+                            } else {
+                                $Birth_Date = $default_info["Birth_Date"];
+                            }
+                            if ($Post_Department_Number !== $default_info["DM.Department_Number"]) {
+                                $Department_Number = $Post_Department_Number[0];
+                            } else {
+                                $Department_Number = $default_info["DM.Department_Number"];
+                            }
+                            if ($Post_Username !== $default_info["Username"]) {
+                                $Username = $Post_Username;
+                            } else {
+                                $Username = $default_info["Username"];
+                            }
+                            if ($_POST['Password'] !== "") {
+                                $Post_Password = hash('sha256', trim($_POST['Password']));
+                                if ($Post_Password !== $default_info["Password"]) {
+                                    $Password = $Post_Password;
+                                } else {
+                                    $Password = $default_info["Password"];
+                                }
+                            } else {
+                                $Password = $default_info["Password"];
+                            }
+                            $edit_result = $this->Manager->UpdateInfoManager($IdAccount, $Name, $Email, $PhoneNum, $Username, $Password, $EmployeeID, $Gender, $Hire_Date, $Job, $Birth_Date, $Department_Number); //update profile in User table and GiaoVien table
                             if ($edit_result === false) {
                                 echo '<script type="text/javascript">';
                                 echo 'alert("Có lỗi xảy ra, vui lòng thử lại!");';  //error messenge
@@ -140,7 +214,7 @@ class edit extends Controller
         }
     }
 
-    private function reformat_date($date_before)
+    private function reformat_date($date_before) // reformat date to yyyy-mm-dd for insert to db
     {
         $dateArray = explode('/', $date_before);
         $date = $dateArray[2] . '-' . $dateArray[0] . '-' . $dateArray[1];
@@ -149,15 +223,12 @@ class edit extends Controller
 
     function employee($IdAccount)
     {
-        if ($this->User->CheckValidEmployee($IdAccount) === true) {
+        if ($this->Employee->CheckValidEmployee($IdAccount) === true) {
             if (isset($_SESSION["permission"])) {
                 if ($_SESSION["permission"] === "admin") {
                     if (isset($_POST["submit"])) {
                         try {
                             //check empty field
-                            if (intval($_POST['IdAccount']) !== intval($IdAccount)) {
-                                throw new Exception("ID tài khoản không khớp");
-                            }
                             if (empty($_POST['EmployeeID'])) {
                                 throw new Exception("ID Nhân viên không được để trống");
                             }
@@ -189,35 +260,108 @@ class edit extends Controller
                                 throw new Exception("Username không được để trống");
                             }
                             //check form data
-                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) {
+                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) { //example: CN17AT0001
                                 throw new Exception("Username không hợp lệ");
                             }
-                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['EmployeeID']) === false) {
+                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['EmployeeID']) === false) { //example: CN17AT0001
                                 throw new Exception("ID Nhân viên không hợp lệ");
                             }
-                            if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) {
+                            if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) { //exmaple: 0856562876
                                 throw new Exception("Số điện thoại không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Hire_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Hire_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày bắt đầu làm việc không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày sinh không hợp lệ");
                             }
                             //delete space and special char in form data
-                            $IdAccount = trim($_POST['IdAccount']);
-                            $EmployeeID = trim(($_POST['EmployeeID']));
-                            $Name = trim($_POST['Name']);
-                            $Email = trim($_POST['Email']);
-                            $PhoneNum = trim($_POST['PhoneNum']);
-                            $Gender = trim($_POST['Gender']);
-                            $Hire_Date = $this->reformat_date(trim($_POST['Hire_Date']));
-                            $Job = trim($_POST['Job']);
-                            $Birth_Date = $this->reformat_date(trim($_POST['Birth_Date']));
-                            $Department_Number = $this->Department->GetDeptFromName(trim($_POST['Department_Name']));
-                            $Username = trim($_POST['Username']);
-                            $Password = hash('sha256', trim($_POST['Password']));
-                            $edit_result = $this->Employee->UpdateInfoEmployee($IdAccount, $Name, $Email, $PhoneNum, $Username, $Password, $EmployeeID, $Gender, $Hire_Date, $Job, $Birth_Date, $Department_Number[0]); //update profile in User table and GiaoVien table
+                            $IdAccount = $_SESSION["employee_edit"];
+                            $Post_EmployeeID = trim(($_POST['EmployeeID']));
+                            $Post_Name = trim($_POST['Name']);
+                            $Post_Email = trim($_POST['Email']);
+                            $Post_PhoneNum = trim($_POST['PhoneNum']);
+                            $Post_Gender = trim($_POST['Gender']);
+                            $Post_Hire_Date = $this->reformat_date(trim($_POST['Hire_Date']));
+                            $Post_Job = trim($_POST['Job']);
+                            $Post_Birth_Date = $this->reformat_date(trim($_POST['Birth_Date']));
+                            $Post_Department_Number = $this->Department->GetDeptFromName(trim($_POST['Department_Name']));
+                            $Post_Username = trim($_POST['Username']);
+                            //value store what will be edited
+                            $EmployeeID = "";
+                            $Name = "";
+                            $Email = "";
+                            $PhoneNum = "";
+                            $Gender = "";
+                            $Hire_Date = "";
+                            $Job = "";
+                            $Birth_Date = "";
+                            $Department_Number = "";
+                            $Username = "";
+                            $Password = "";
+                            //check what is edited
+                            $default_info = $this->Employee->GetEmployeeWithId($IdAccount);
+                            if ($Post_EmployeeID !== $default_info["Username"]) {
+                                $EmployeeID = $Post_EmployeeID;
+                            } else {
+                                $EmployeeID = $default_info["Username"];
+                            }
+                            if ($Post_Name !== $default_info["Name"]) {
+                                $Name = $Post_Name;
+                            } else {
+                                $Name = $default_info["Name"];
+                            }
+                            if ($Post_Email !== $default_info["Email"]) {
+                                $Email = $Post_Email;
+                            } else {
+                                $Email = $default_info["Email"];
+                            }
+                            if ($Post_PhoneNum !== $default_info["PhoneNum"]) {
+                                $PhoneNum = $Post_PhoneNum;
+                            } else {
+                                $PhoneNum = $default_info["PhoneNum"];
+                            }
+                            if ($Post_Gender !== $default_info["Gender"]) {
+                                $Gender = $Post_Gender;
+                            } else {
+                                $Gender = $default_info["Gender"];
+                            }
+                            if ($Post_Hire_Date !== $default_info["Hire_Date"]) {
+                                $Hire_Date = $Post_Hire_Date;
+                            } else {
+                                $Hire_Date = $default_info["Hire_Date"];
+                            }
+                            if ($Post_Job !== $default_info["Job"]) {
+                                $Job = $Post_Job;
+                            } else {
+                                $Job = $default_info["Job"];
+                            }
+                            if ($Post_Birth_Date !== $default_info["Birth_Date"]) {
+                                $Birth_Date = $Post_Birth_Date;
+                            } else {
+                                $Birth_Date = $default_info["Birth_Date"];
+                            }
+                            if ($Post_Department_Number !== $default_info["DE.Department_Number"]) {
+                                $Department_Number = $Post_Department_Number[0];
+                            } else {
+                                $Department_Number = $default_info["DE.Department_Number"];
+                            }
+                            if ($Post_Username !== $default_info["Username"]) {
+                                $Username = $Post_Username;
+                            } else {
+                                $Username = $default_info["Username"];
+                            }
+                            if ($_POST['Password'] !== "") {
+                                $Post_Password = hash('sha256', trim($_POST['Password']));
+                                if ($Post_Password !== $default_info["Password"]) {
+                                    $Password = $Post_Password;
+                                } else {
+                                    $Password = $default_info["Password"];
+                                }
+                            } else {
+                                $Password = $default_info["Password"];
+                            }
+                            $edit_result = $this->Employee->UpdateInfoEmployee($IdAccount, $Name, $Email, $PhoneNum, $Username, $Password, $EmployeeID, $Gender, $Hire_Date, $Job, $Birth_Date, $Department_Number); //update profile in User table and GiaoVien table
                             if ($edit_result === false) {
                                 echo '<script type="text/javascript">';
                                 echo 'alert("Có lỗi xảy ra, vui lòng thử lại!");';  //error messenge
@@ -246,10 +390,6 @@ class edit extends Controller
                 } else if ($_SESSION["permission"] === "manager") {
                     if (isset($_POST["submit"])) {
                         try {
-                            //check empty field
-                            if (intval($_POST['IdAccount']) !== intval($IdAccount)) {
-                                throw new Exception("ID tài khoản không khớp");
-                            }
                             if (empty($_POST['EmployeeID'])) {
                                 throw new Exception("ID Nhân viên không được để trống");
                             }
@@ -281,34 +421,107 @@ class edit extends Controller
                                 throw new Exception("Username không được để trống");
                             }
                             //check form data
-                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) {
+                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) { //example: CN17AT0001
                                 throw new Exception("Username không hợp lệ");
                             }
-                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['EmployeeID']) === false) {
+                            if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['EmployeeID']) === false) { //example: CN17AT0001
                                 throw new Exception("ID Nhân viên không hợp lệ");
                             }
-                            if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) {
+                            if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) { //exmaple: 0856562876
                                 throw new Exception("Số điện thoại không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Hire_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Hire_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày bắt đầu làm việc không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Birth_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày sinh không hợp lệ");
                             }
                             //delete space and special char in form data
-                            $IdAccount = trim($_POST['IdAccount']);
-                            $EmployeeID = trim(($_POST['EmployeeID']));
-                            $Name = trim($_POST['Name']);
-                            $Email = trim($_POST['Email']);
-                            $PhoneNum = trim($_POST['PhoneNum']);
-                            $Gender = trim($_POST['Gender']);
-                            $Hire_Date = $this->reformat_date(trim($_POST['Hire_Date']));
-                            $Job = trim($_POST['Job']);
-                            $Birth_Date = $this->reformat_date(trim($_POST['Birth_Date']));
-                            $Department_Number = $this->Department->GetDeptFromName(trim($_POST['Department_Name']));
-                            $Username = trim($_POST['Username']);
-                            $Password = hash('sha256', trim($_POST['Password']));
+                            $IdAccount = $_SESSION["employee_edit"];
+                            $Post_EmployeeID = trim(($_POST['EmployeeID']));
+                            $Post_Name = trim($_POST['Name']);
+                            $Post_Email = trim($_POST['Email']);
+                            $Post_PhoneNum = trim($_POST['PhoneNum']);
+                            $Post_Gender = trim($_POST['Gender']);
+                            $Post_Hire_Date = $this->reformat_date(trim($_POST['Hire_Date']));
+                            $Post_Job = trim($_POST['Job']);
+                            $Post_Birth_Date = $this->reformat_date(trim($_POST['Birth_Date']));
+                            $Post_Department_Number = $this->Department->GetDeptFromName(trim($_POST['Department_Name']));
+                            $Post_Username = trim($_POST['Username']);
+                            //value store what will be edited
+                            $EmployeeID = "";
+                            $Name = "";
+                            $Email = "";
+                            $PhoneNum = "";
+                            $Gender = "";
+                            $Hire_Date = "";
+                            $Job = "";
+                            $Birth_Date = "";
+                            $Department_Number = "";
+                            $Username = "";
+                            $Password = "";
+                            //check what is edited
+                            $default_info = $this->Employee->GetEmployeeWithId($IdAccount);
+                            if ($Post_EmployeeID !== $default_info["Username"]) {
+                                $EmployeeID = $Post_EmployeeID;
+                            } else {
+                                $EmployeeID = $default_info["Username"];
+                            }
+                            if ($Post_Name !== $default_info["Name"]) {
+                                $Name = $Post_Name;
+                            } else {
+                                $Name = $default_info["Name"];
+                            }
+                            if ($Post_Email !== $default_info["Email"]) {
+                                $Email = $Post_Email;
+                            } else {
+                                $Email = $default_info["Email"];
+                            }
+                            if ($Post_PhoneNum !== $default_info["PhoneNum"]) {
+                                $PhoneNum = $Post_PhoneNum;
+                            } else {
+                                $PhoneNum = $default_info["PhoneNum"];
+                            }
+                            if ($Post_Gender !== $default_info["Gender"]) {
+                                $Gender = $Post_Gender;
+                            } else {
+                                $Gender = $default_info["Gender"];
+                            }
+                            if ($Post_Hire_Date !== $default_info["Hire_Date"]) {
+                                $Hire_Date = $Post_Hire_Date;
+                            } else {
+                                $Hire_Date = $default_info["Hire_Date"];
+                            }
+                            if ($Post_Job !== $default_info["Job"]) {
+                                $Job = $Post_Job;
+                            } else {
+                                $Job = $default_info["Job"];
+                            }
+                            if ($Post_Birth_Date !== $default_info["Birth_Date"]) {
+                                $Birth_Date = $Post_Birth_Date;
+                            } else {
+                                $Birth_Date = $default_info["Birth_Date"];
+                            }
+                            if ($Post_Department_Number !== $default_info["DE.Department_Number"]) {
+                                $Department_Number = $Post_Department_Number[0];
+                            } else {
+                                $Department_Number = $default_info["DE.Department_Number"];
+                            }
+                            if ($Post_Username !== $default_info["Username"]) {
+                                $Username = $Post_Username;
+                            } else {
+                                $Username = $default_info["Username"];
+                            }
+                            if ($_POST['Password'] !== "") {
+                                $Post_Password = hash('sha256', trim($_POST['Password']));
+                                if ($Post_Password !== $default_info["Password"]) {
+                                    $Password = $Post_Password;
+                                } else {
+                                    $Password = $default_info["Password"];
+                                }
+                            } else {
+                                $Password = $default_info["Password"];
+                            }
                             $edit_result = $this->Employee->UpdateInfoEmployee($IdAccount, $Name, $Email, $PhoneNum, $Username, $Password, $EmployeeID, $Gender, $Hire_Date, $Job, $Birth_Date, $Department_Number[0]); //update profile in User table and GiaoVien table
                             if ($edit_result === false) {
                                 echo '<script type="text/javascript">';
@@ -360,174 +573,85 @@ class edit extends Controller
     {
         if ($this->User->CheckValidAccount($IdAccount) === true) {
             if ($IdAccount === $_SESSION['user_id']) {
-                if (isset($_SESSION["permission"])) {
-                    if ($_SESSION["permission"] === "admin") {
-                        if (isset($_POST["submit"])) {
-                            try {
-                                //check empty field
-                                if (empty($_POST['Email'])) {
-                                    throw new Exception("Email không được để trống");
-                                }
-                                if (empty($_POST['PhoneNum'])) {
-                                    throw new Exception("Số điện thoại không được để trống");
-                                }
-                                if (empty($_POST['Username'])) {
-                                    throw new Exception("Username không được để trống");
-                                }
-                                if (empty($_POST['Password'])) {
-                                    throw new Exception("Password không được để trống");
-                                }
-                                //check form data
-                                if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) {
-                                    throw new Exception("Username không hợp lệ");
-                                }
-                                if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) {
-                                    throw new Exception("Số điện thoại không hợp lệ");
-                                }
-                                //delete space and special char in form data
-                                $Email = trim($_POST['Email']);
-                                $PhoneNum = trim($_POST['PhoneNum']);
-                                $Username = trim($_POST['Username']);
-                                $Password = hash('sha256', trim($_POST['Password']));
-                                $edit_result = $this->User->UpdateSettingAccount($IdAccount, $Username, $Password, $PhoneNum, $Email); //update profile in User table and GiaoVien table
-                                if ($edit_result === false) {
-                                    echo '<script type="text/javascript">';
-                                    echo 'alert("Có lỗi xảy ra vui lòng thử lại!");';  //error messenge
-                                    echo 'window.location.href = "javascript:history.back()";';
-                                    echo '</script>';
-                                    exit();
-                                } else {
-                                    echo '<script type="text/javascript">';
-                                    echo 'alert("Cập nhật thông tin thành công");';  //success messenge
-                                    echo 'window.location.href = "/";'; //redirect to list teacher
-                                    echo '</script>';
-                                    exit();
-                                }
-                            } catch (Exception $e) {
-                                $error_msg = $e->getMessage();
+                if (isset($_POST["submit"])) {
+                    try {
+                        //check empty field
+                        if (empty($_POST['Email'])) {
+                            throw new Exception("Email không được để trống");
+                        }
+                        if (empty($_POST['PhoneNum'])) {
+                            throw new Exception("Số điện thoại không được để trống");
+                        }
+                        if (empty($_POST['Username'])) {
+                            throw new Exception("Username không được để trống");
+                        }
+                        if (empty($_POST['Password'])) {
+                            throw new Exception("Password không được để trống");
+                        }
+                        //check form data
+                        if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) { //example: CN17AT0001
+                            throw new Exception("Username không hợp lệ");
+                        }
+                        if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) { //exmaple: 0856562876
+                            throw new Exception("Số điện thoại không hợp lệ");
+                        }
+                        //delete space and special char in form data
+                        $Post_Email = trim($_POST['Email']);
+                        $Post_PhoneNum = trim($_POST['PhoneNum']);
+                        $Post_Username = trim($_POST['Username']);
+                        //value store what will be edited
+                        $Email = "";
+                        $PhoneNum = "";
+                        $Username = "";
+                        $Password = "";
+                        //check what is edited
+                        $default_info = $this->User->GetInfoUserByID($IdAccount);
+                        if ($Post_Email !== $default_info["Email"]) {
+                            $Email = $Post_Email;
+                        } else {
+                            $Email = $default_info["Email"];
+                        }
+                        if ($Post_PhoneNum !== $default_info["PhoneNum"]) {
+                            $PhoneNum = $Post_PhoneNum;
+                        } else {
+                            $PhoneNum = $default_info["PhoneNum"];
+                        }
+                        if ($Post_Username !== $default_info["Username"]) {
+                            $Username = $Post_Username;
+                        } else {
+                            $Username = $default_info["Username"];
+                        }
+                        if ($_POST['Password'] !== "") {
+                            $Post_Password = hash('sha256', trim($_POST['Password']));
+                            if ($Post_Password !== $default_info["Password"]) {
+                                $Password = $Post_Password;
+                            } else {
+                                $Password = $default_info["Password"];
                             }
-                            $this->ViewWithPer("account-setting", "admin", [
-                                "error_msg" => $error_msg
-                            ]);
+                        } else {
+                            $Password = $default_info["Password"];
+                        }
+                        $edit_result = $this->User->UpdateSettingAccount($IdAccount, $Username, $Password, $PhoneNum, $Email); //update profile in User table and GiaoVien table
+                        if ($edit_result === false) {
+                            echo '<script type="text/javascript">';
+                            echo 'alert("Có lỗi xảy ra vui lòng thử lại!");';  //error messenge
+                            echo 'window.location.href = "javascript:history.back()";';
+                            echo '</script>';
                             exit();
                         } else {
-                            http_response_code(500);
-                            header('Location: /page-error-500.html');
+                            echo '<script type="text/javascript">';
+                            echo 'alert("Cập nhật thông tin thành công");';  //success messenge
+                            echo 'window.location.href = "/";'; //redirect to list teacher
+                            echo '</script>';
                             exit();
                         }
-                    } else if ($_SESSION["permission"] === "manager") {
-                        if (isset($_POST["submit"])) {
-                            try {
-                                //check empty field
-                                if (empty($_POST['Email'])) {
-                                    throw new Exception("Email không được để trống");
-                                }
-                                if (empty($_POST['PhoneNum'])) {
-                                    throw new Exception("Số điện thoại không được để trống");
-                                }
-                                if (empty($_POST['Username'])) {
-                                    throw new Exception("Username không được để trống");
-                                }
-                                if (empty($_POST['Password'])) {
-                                    throw new Exception("Password không được để trống");
-                                }
-                                //check form data
-                                if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) {
-                                    throw new Exception("Username không hợp lệ");
-                                }
-                                if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) {
-                                    throw new Exception("Số điện thoại không hợp lệ");
-                                }
-                                //delete space and special char in form data
-                                $Email = trim($_POST['Email']);
-                                $PhoneNum = trim($_POST['PhoneNum']);
-                                $Username = trim($_POST['Username']);
-                                $Password = hash('sha256', trim($_POST['Password']));
-                                $edit_result = $this->User->UpdateSettingAccount($IdAccount, $Username, $Password, $PhoneNum, $Email); //update profile in User table and GiaoVien table
-                                if ($edit_result === false) {
-                                    echo '<script type="text/javascript">';
-                                    echo 'alert("Có lỗi xảy ra vui lòng thử lại!");';  //error messenge
-                                    echo 'window.location.href = "javascript:history.back()";';
-                                    echo '</script>';
-                                    exit();
-                                } else {
-                                    echo '<script type="text/javascript">';
-                                    echo 'alert("Cập nhật thông tin thành công");';  //success messenge
-                                    echo 'window.location.href = "/";'; //redirect to list teacher
-                                    echo '</script>';
-                                    exit();
-                                }
-                            } catch (Exception $e) {
-                                $error_msg = $e->getMessage();
-                            }
-                            $this->ViewWithPer("account-setting", "manager", [
-                                "error_msg" => $error_msg
-                            ]);
-                            exit();
-                        } else {
-                            http_response_code(500);
-                            header('Location: /page-error-500.html');
-                            exit();
-                        }
-                    } else if ($_SESSION["permission"] === "employee") {
-                        if (isset($_POST["submit"])) {
-                            try {
-                                //check empty field
-                                if (empty($_POST['Email'])) {
-                                    throw new Exception("Email không được để trống");
-                                }
-                                if (empty($_POST['PhoneNum'])) {
-                                    throw new Exception("Số điện thoại không được để trống");
-                                }
-                                if (empty($_POST['Username'])) {
-                                    throw new Exception("Username không được để trống");
-                                }
-                                if (empty($_POST['Password'])) {
-                                    throw new Exception("Password không được để trống");
-                                }
-                                //check form data
-                                if (preg_match('/^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/', $_POST['Username']) === false) {
-                                    throw new Exception("Username không hợp lệ");
-                                }
-                                if (preg_match('/^0[1-9]{1}[0-9]{8}$/', $_POST['PhoneNum'] === false)) {
-                                    throw new Exception("Số điện thoại không hợp lệ");
-                                }
-                                //delete space and special char in form data
-                                $Email = trim($_POST['Email']);
-                                $PhoneNum = trim($_POST['PhoneNum']);
-                                $Username = trim($_POST['Username']);
-                                $Password = hash('sha256', trim($_POST['Password']));
-                                $edit_result = $this->User->UpdateSettingAccount($IdAccount, $Username, $Password, $PhoneNum, $Email); //update profile in User table and GiaoVien table
-                                if ($edit_result === false) {
-                                    echo '<script type="text/javascript">';
-                                    echo 'alert("Có lỗi xảy ra vui lòng thử lại!");';  //error messenge
-                                    echo 'window.location.href = "javascript:history.back()";';
-                                    echo '</script>';
-                                    exit();
-                                } else {
-                                    echo '<script type="text/javascript">';
-                                    echo 'alert("Cập nhật thông tin thành công");';  //success messenge
-                                    echo 'window.location.href = "/";'; //redirect to list teacher
-                                    echo '</script>';
-                                    exit();
-                                }
-                            } catch (Exception $e) {
-                                $error_msg = $e->getMessage();
-                            }
-                            $this->ViewWithPer("account-setting", "employee", [
-                                "error_msg" => $error_msg
-                            ]);
-                            exit();
-                        } else {
-                            http_response_code(500);
-                            header('Location: /page-error-500.html');
-                            exit();
-                        }
-                    } else {
-                        http_response_code(403);
-                        header('Location: /page-error-403.html');
-                        exit();
+                    } catch (Exception $e) {
+                        $error_msg = $e->getMessage();
                     }
+                    $this->ViewWithPer("account-setting", "admin", [
+                        "error_msg" => $error_msg
+                    ]);
+                    exit();
                 } else {
                     http_response_code(500);
                     header('Location: /page-error-500.html');
@@ -553,9 +677,6 @@ class edit extends Controller
                     if (isset($_POST["submit"])) {
                         try {
                             //check empty field
-                            if (intval($_POST['IdForm']) !== intval($IdForm)) {
-                                throw new Exception("ID Đơn không khớp");
-                            }
                             if (empty($_POST['Start_Date'])) {
                                 throw new Exception("Ngày bắt đầu không được để trống");
                             }
@@ -566,19 +687,19 @@ class edit extends Controller
                                 throw new Exception("Lý do không được để trống");
                             }
                             //check form data
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Start_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Start_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày bắt đầu không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['End_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['End_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày kết thúc không hợp lệ");
                             }
                             //delete space and special char in form data
                             $IdAccount_Employess = $_SESSION["user_id"];
-                            $IdForm = trim(($_POST['IdForm']));
-                            $Start_Date = $this->reformat_date(trim($_POST['Start_Date']));
-                            $End_Date = $this->reformat_date(trim($_POST['End_Date']));
+                            $IdForm = $_SESSION["form_edit"];
+                            $Start_Date = $this->reformat_date(trim($_POST['Start_Date'])); //yyyy-mm-dd
+                            $End_Date = $this->reformat_date(trim($_POST['End_Date'])); //yyyy-mm-dd
                             $Reason = trim($_POST['Reason']);
-                            $create_result = $this->Manager->EditLeaDayForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
+                            $create_result = $this->Leave_Day_Form->EditLeaDayForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
                             if ($create_result === false) {
                                 echo '<script type="text/javascript">';
                                 echo 'alert("Có lỗi xảy ra vui lòng thử lại!");';  //error messenge
@@ -588,7 +709,7 @@ class edit extends Controller
                             } else {
                                 echo '<script type="text/javascript">';
                                 echo 'alert("Cập nhật thông tin thành công");';  //success messenge
-                                echo 'window.location.href = "/";'; //redirect to list teacher
+                                echo 'window.location.href = "/listed/my_leave_form";'; //redirect to list teacher
                                 echo '</script>';
                                 exit();
                             }
@@ -608,9 +729,6 @@ class edit extends Controller
                     if (isset($_POST["submit"])) {
                         try {
                             //check empty field
-                            if (intval($_POST['IdForm']) !== intval($IdForm)) {
-                                throw new Exception("ID Đơn không khớp");
-                            }
                             if (empty($_POST['Start_Date'])) {
                                 throw new Exception("Ngày bắt đầu không được để trống");
                             }
@@ -629,11 +747,11 @@ class edit extends Controller
                             }
                             //delete space and special char in form data
                             $IdAccount_Employess = $_SESSION["user_id"];
-                            $IdForm = trim(($_POST['IdForm']));
+                            $IdForm = $_SESSION["form_edit"];
                             $Start_Date = $this->reformat_date(trim($_POST['Start_Date']));
                             $End_Date = $this->reformat_date(trim($_POST['End_Date']));
                             $Reason = trim($_POST['Reason']);
-                            $create_result = $this->Employee->EditLeaDayForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
+                            $create_result = $this->Leave_Day_Form->EditLeaDayForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
                             if ($create_result === false) {
                                 echo '<script type="text/javascript">';
                                 echo 'alert("Có lỗi xảy ra vui lòng thử lại!");';  //error messenge
@@ -643,7 +761,7 @@ class edit extends Controller
                             } else {
                                 echo '<script type="text/javascript">';
                                 echo 'alert("Cập nhật thông tin thành công");';  //success messenge
-                                echo 'window.location.href = "/";'; //redirect to list teacher
+                                echo 'window.location.href = "/listed/my_leave_form";'; //redirect to list teacher
                                 echo '</script>';
                                 exit();
                             }
@@ -684,9 +802,6 @@ class edit extends Controller
                     if (isset($_POST["submit"])) {
                         try {
                             //check empty field
-                            if (intval($_POST['IdForm']) !== intval($IdForm)) {
-                                throw new Exception("ID Đơn không khớp");
-                            }
                             if (empty($_POST['IdAccount'])) {
                                 throw new Exception("ID Tài khoản không được để trống");
                             }
@@ -700,10 +815,10 @@ class edit extends Controller
                                 throw new Exception("Lý do không được để trống");
                             }
                             //check form data
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Start_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['Start_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày bắt đầu không hợp lệ");
                             }
-                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['End_Date'] === false)) {
+                            if (preg_match('/^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $_POST['End_Date'] === false)) { //dd-mm-yyyy
                                 throw new Exception("Ngày kết thúc không hợp lệ");
                             }
                             //delete space and special char in form data
@@ -712,7 +827,7 @@ class edit extends Controller
                             $Start_Date = $this->reformat_date(trim($_POST['Start_Date']));
                             $End_Date = $this->reformat_date(trim($_POST['End_Date']));
                             $Reason = trim($_POST['Reason']);
-                            $create_result = $this->Manager->EditLeaDayForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
+                            $create_result = $this->Leave_Day_Form->EditLeaDayForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
                             if ($create_result === false) {
                                 echo '<script type="text/javascript">';
                                 echo 'alert("Có lỗi xảy ra vui lòng thử lại!");';  //error messenge
@@ -770,7 +885,7 @@ class edit extends Controller
                             $Start_Date = $this->reformat_date(trim($_POST['Start_Date']));
                             $End_Date = $this->reformat_date(trim($_POST['End_Date']));
                             $Reason = trim($_POST['Reason']);
-                            $create_result = $this->User->EditLeaDayForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
+                            $create_result = $this->Leave_Day_Form->EditLeaDayForm($IdAccount_Employess, $IdForm, $Start_Date, $End_Date, $Reason); //update profile in User table and GiaoVien table
                             if ($create_result === false) {
                                 echo '<script type="text/javascript">';
                                 echo 'alert("Có lỗi xảy ra vui lòng thử lại!");';  //error messenge

@@ -2,21 +2,8 @@
 
 class Manager extends User
 {
-    public function GetAllManager()
-    {
-        $query = "SELECT IdAccount, Username, Name, Email, PhoneNum, Gender, Hire_Date, Job, Birth_Date, Department_Name FROM Account INNER JOIN Employess E on Account.IdAccount = E.IdAccount_Employess INNER JOIN Department_Manager DM on E.IdAccount_Employess = DM.IdAccount_Employess INNER JOIN Department D on DM.Department_Number = D.Department_Number";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                $result = $statement->fetchAll();
-                return $result;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
+//functions get something with something
+    //get manager info with account id
     public function GetManagerWithId($IdAccount)
     {
         $query = "SELECT IdAccount, Username, Password, Name, Email, PhoneNum, State, Gender, Hire_Date, Job, Birth_Date, DM.Department_Number, Department_Name FROM Account INNER JOIN Employess E on Account.IdAccount = E.IdAccount_Employess INNER JOIN Department_Manager DM on E.IdAccount_Employess = DM.IdAccount_Employess INNER JOIN Department D on DM.Department_Number = D.Department_Number WHERE IdAccount=:id";
@@ -33,6 +20,97 @@ class Manager extends User
         }
     }
 
+    //get salary with account id
+    public function GetSalary($IdAccount_Employess, $Month, $Year)
+    {
+        $query = "SELECT * FROM Salaries WHERE IdAccount_Employess=:id AND Month=:month AND Year=:year";
+        try {
+            $statement = $this->connect->prepare($query);
+            $statement->bindValue(':id', $IdAccount_Employess, PDO::PARAM_STR);
+            $statement->bindValue(':month', $Month, PDO::PARAM_STR);
+            $statement->bindValue(':year', $Year, PDO::PARAM_STR);
+            $statement->execute();
+            $count = $statement->rowCount();
+            if ($count > 0) {
+                $result = $statement->fetch();
+                return $result;
+            } else return false;
+        } catch (PDOException $e) {
+        }
+    }
+
+    //get net salary with account id
+    public function GetNetSalry($IdAccount_Employess, $Month, $Year)
+    {
+        $query = "SELECT Net_Salary FROM Salaries WHERE IdAccount_Employess=:id AND Month=:month AND Year=:year";
+        try {
+            $statement = $this->connect->prepare($query);
+            $statement->bindValue(':id', $IdAccount_Employess, PDO::PARAM_STR);
+            $statement->bindValue(':month', $Month, PDO::PARAM_STR);
+            $statement->bindValue(':year', $Year, PDO::PARAM_STR);
+            $statement->execute();
+            $count = $statement->rowCount();
+            if ($count > 0) {
+                $result = $statement->fetch();
+                return $result;
+            } else return false;
+        } catch (PDOException $e) {
+        }
+    }
+
+//functions check valid something
+    //function check valid manager account with account id
+    public function CheckValidManager($IdAccount)
+    {
+        $query = "SELECT * FROM Department_Manager WHERE IdAccount_Employess=:id";
+        try {
+            $statement = $this->connect->prepare($query);
+            $statement->bindValue(':id', $IdAccount, PDO::PARAM_STR);
+            $statement->execute();
+            $count = $statement->rowCount();
+            if ($count > 0) {
+                return true;
+            } else return false;
+        } catch (PDOException $e) {
+        }
+    }
+
+//functions get info for api controller
+    //get salary in year
+    public function GetYearSalary($IdAccount_Employess, $Year)
+    {
+        $query = "SELECT CONVERT((Net_Salary-((Net_Salary/DAY(LAST_DAY(CONVERT(CONCAT(Year,'-0',Month,'-','01'),DATE ))))*Unpaid_leave_day)-50000*Late_day), SIGNED) AS Total_Salary FROM Salaries WHERE IdAccount_Employess=:id AND Year=:year ORDER BY Month ASC";
+        try {
+            $statement = $this->connect->prepare($query);
+            $statement->bindValue(':id', $IdAccount_Employess, PDO::PARAM_STR);
+            $statement->bindValue(':year', $Year, PDO::PARAM_STR);
+            $statement->execute();
+            $count = $statement->rowCount();
+            if ($count > 0) {
+                $result = $statement->fetchAll();
+                return $result;
+            } else return false;
+        } catch (PDOException $e) {
+        }
+    }
+
+//functions delete
+    //delete manager with account id
+    public function DeleteManager($IdAccount)
+    {
+        $query = "DELETE FROM Account WHERE IdAccount=:id";
+        try {
+            $statement = $this->connect->prepare($query);
+            $statement->bindValue(':id', $IdAccount, PDO::PARAM_STR);
+            if ($statement->execute()) {
+                return true;
+            } else return false;
+        } catch (PDOException $e) {
+        }
+    }
+
+//function edit or update something
+    //update manager info
     public function UpdateInfoManager($IdAccount, $Name, $Email, $PhoneNum, $Username, $Password, $Employess_Code, $Gender, $Hire_Date, $Job, $Birth_Date, $Department_Number)
     {
         $check = 0;
@@ -78,20 +156,8 @@ class Manager extends User
         else return false;
     }
 
-    public function DeleteManager($IdAccount)
-    {
-        $query = "DELETE FROM Account WHERE IdAccount=:id";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':id', $IdAccount, PDO::PARAM_STR);
-            if ($statement->execute()) {
-                return true;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-
+//functions create
+    //create manager
     public function CreateManager($IdAccount, $Name, $Email, $PhoneNum, $Username, $Password, $Employess_Code, $Gender, $Hire_Date, $Job, $Birth_Date, $Department_Number)
     {
         $check = 0;
@@ -138,251 +204,13 @@ class Manager extends User
         else return false;
     }
 
-    public function GetLeaDayForm($IdAccount)
+//functions get all
+    //get all manager
+    public function GetAllManager()
     {
-        $query = "SELECT * FROM Leave_Day_Form WHERE IdAccount_Employess=:id";
+        $query = "SELECT IdAccount, Username, Name, Email, PhoneNum, Gender, Hire_Date, Job, Birth_Date, Department_Name FROM Account INNER JOIN Employess E on Account.IdAccount = E.IdAccount_Employess INNER JOIN Department_Manager DM on E.IdAccount_Employess = DM.IdAccount_Employess INNER JOIN Department D on DM.Department_Number = D.Department_Number";
         try {
             $statement = $this->connect->prepare($query);
-            $statement->bindValue(':id', $IdAccount, PDO::PARAM_STR);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                $result = $statement->fetchAll();
-                return $result;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetLeaDayFormWithFormID($IdForm)
-    {
-        $query = "SELECT * FROM Leave_Day_Form WHERE IdForm=:id_form";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':id_form', $IdForm, PDO::PARAM_STR);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                $result = $statement->fetch();
-                return $result;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function EditLeaDayForm($IdAccount, $IdForm, $Start_Date, $End_Date, $Reason)
-    {
-        $query = "UPDATE Leave_Day_Form SET Start_Date=:start_date, End_Date=:end_date, Reason=:reason WHERE IdAccount_Employess=:id AND IdForm=:id_form";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':start_date', $Start_Date, PDO::PARAM_STR);
-            $statement->bindValue(':end_date', $End_Date, PDO::PARAM_STR);
-            $statement->bindValue(':reason', $Reason, PDO::PARAM_STR);
-            $statement->bindValue(':id', $IdAccount, PDO::PARAM_STR);
-            $statement->bindValue(':id_form', $IdForm, PDO::PARAM_STR);
-            if ($statement->execute()) {
-                return true;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetAmountLeaForm()
-    {
-        $query = "SELECT * FROM Leave_Day_Form";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                return $count;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetUserFromForm($IdForm)
-    {
-        $query = "SELECT IdAccount_Employess FROM Leave_Day_Form WHERE IdForm=:id_form";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':id_form', $IdForm, PDO::PARAM_STR);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                $result = $statement->fetch();
-                return $result;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function DeleteForm($IdForm)
-    {
-        $query = "DELETE FROM Leave_Day_Form WHERE IdForm=:id_form";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':id_form', $IdForm, PDO::PARAM_STR);
-            if ($statement->execute()) {
-                return true;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function CreateForm($IdAccount, $IdForm, $Start_Date, $End_Date, $Reason)
-    {
-        $query = "INSERT INTO Leave_Day_Form (IdAccount_Employess, IdForm, Start_Date, End_Date, Reason) VALUE (:id, :id_form, :start_date, :end_date, :reason)";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':id', $IdAccount, PDO::PARAM_STR);
-            $statement->bindValue(':id_form', $IdForm, PDO::PARAM_STR);
-            $statement->bindValue(':start_date', $Start_Date, PDO::PARAM_STR);
-            $statement->bindValue(':end_date', $End_Date, PDO::PARAM_STR);
-            $statement->bindValue(':reason', $Reason, PDO::PARAM_STR);
-            if ($statement->execute()) {
-                return true;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetListFormDepartment($Department_Number)
-    {
-        $query = "SELECT E.IdAccount_Employess,Employess_Code,IdForm,Name,Start_Date,End_Date,Reason,Form_Status FROM Account INNER JOIN Employess E on Account.IdAccount = E.IdAccount_Employess INNER JOIN Dept_Emp DE on E.IdAccount_Employess = DE.IdAccount_Employess INNER JOIN Department D on DE.Department_Number = D.Department_Number INNER JOIN Leave_Day_Form LDF on E.IdAccount_Employess = LDF.IdAccount_Employess WHERE D.Department_Number=:dept_num";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':dept_num', $Department_Number, PDO::PARAM_STR);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                $result = $statement->fetchAll();
-                return $result;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetTotalAmountFormDepartment($Department_Number)
-    {
-        $query = "SELECT E.IdAccount_Employess,IdForm,Name,Start_Date,End_Date,Reason,Form_Status FROM Account INNER JOIN Employess E on Account.IdAccount = E.IdAccount_Employess INNER JOIN Dept_Emp DE on E.IdAccount_Employess = DE.IdAccount_Employess INNER JOIN Department D on DE.Department_Number = D.Department_Number INNER JOIN Leave_Day_Form LDF on E.IdAccount_Employess = LDF.IdAccount_Employess WHERE D.Department_Number=:dept_num";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':dept_num', $Department_Number, PDO::PARAM_STR);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                return $count;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetApprovedAmountFormDepartment($Department_Number)
-    {
-        $query = "SELECT E.IdAccount_Employess,IdForm,Name,Start_Date,End_Date,Reason,Form_Status FROM Account INNER JOIN Employess E on Account.IdAccount = E.IdAccount_Employess INNER JOIN Dept_Emp DE on E.IdAccount_Employess = DE.IdAccount_Employess INNER JOIN Department D on DE.Department_Number = D.Department_Number INNER JOIN Leave_Day_Form LDF on E.IdAccount_Employess = LDF.IdAccount_Employess WHERE D.Department_Number=1 AND Form_Status='Approved'";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':dept_num', $Department_Number, PDO::PARAM_STR);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                return $count;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetPendingAmountFormDepartment($Department_Number)
-    {
-        $query = "SELECT E.IdAccount_Employess,IdForm,Name,Start_Date,End_Date,Reason,Form_Status FROM Account INNER JOIN Employess E on Account.IdAccount = E.IdAccount_Employess INNER JOIN Dept_Emp DE on E.IdAccount_Employess = DE.IdAccount_Employess INNER JOIN Department D on DE.Department_Number = D.Department_Number INNER JOIN Leave_Day_Form LDF on E.IdAccount_Employess = LDF.IdAccount_Employess WHERE D.Department_Number=1 AND Form_Status='Pending'";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':dept_num', $Department_Number, PDO::PARAM_STR);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                return $count;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function ApproveForm($IdForm)
-    {
-        $query = "UPDATE Leave_Day_Form SET Form_Status=:status WHERE IdForm=:id_form";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':status', "Approved", PDO::PARAM_STR);
-            $statement->bindValue(':id_form', $IdForm, PDO::PARAM_STR);
-            if ($statement->execute()) {
-                return true;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetSalary($IdAccount_Employess, $Month, $Year)
-    {
-        $query = "SELECT * FROM Salaries WHERE IdAccount_Employess=:id AND Month=:month AND Year=:year";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':id', $IdAccount_Employess, PDO::PARAM_STR);
-            $statement->bindValue(':month', $Month, PDO::PARAM_STR);
-            $statement->bindValue(':year', $Year, PDO::PARAM_STR);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                $result = $statement->fetch();
-                return $result;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetStartEndApproveForm($IdAccount_Employess, $Limit1, $Limit2)
-    {
-        $query = "SELECT Start_Date, End_Date FROM Leave_Day_Form WHERE IdAccount_Employess=:id AND Start_Date >= :limit1 AND End_Date <= :limit2 AND Form_Status='Approved'";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':id', $IdAccount_Employess, PDO::PARAM_STR);
-            $statement->bindValue(':limit1', $Limit1, PDO::PARAM_STR);
-            $statement->bindValue(':limit2', $Limit2, PDO::PARAM_STR);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                $result = $statement->fetchAll();
-                return $result;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetNetSalry($IdAccount_Employess, $Month, $Year)
-    {
-        $query = "SELECT Net_Salary FROM Salaries WHERE IdAccount_Employess=:id AND Month=:month AND Year=:year";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':id', $IdAccount_Employess, PDO::PARAM_STR);
-            $statement->bindValue(':month', $Month, PDO::PARAM_STR);
-            $statement->bindValue(':year', $Year, PDO::PARAM_STR);
-            $statement->execute();
-            $count = $statement->rowCount();
-            if ($count > 0) {
-                $result = $statement->fetch();
-                return $result;
-            } else return false;
-        } catch (PDOException $e) {
-        }
-    }
-
-    public function GetYearSalary($IdAccount_Employess, $Year)
-    {
-        $query = "SELECT CONVERT((Net_Salary-((Net_Salary/DAY(LAST_DAY(CONVERT(CONCAT(Year,'-0',Month,'-','01'),DATE ))))*Unpaid_leave_day)-50000*Late_day), SIGNED) AS Total_Salary FROM Salaries WHERE IdAccount_Employess=:id AND Year=:year ORDER BY Month ASC";
-        try {
-            $statement = $this->connect->prepare($query);
-            $statement->bindValue(':id', $IdAccount_Employess, PDO::PARAM_STR);
-            $statement->bindValue(':year', $Year, PDO::PARAM_STR);
             $statement->execute();
             $count = $statement->rowCount();
             if ($count > 0) {
@@ -393,5 +221,4 @@ class Manager extends User
         }
     }
 }
-
 ?>

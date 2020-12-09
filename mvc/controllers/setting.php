@@ -6,12 +6,18 @@ class setting extends Controller
     private $User;
     private $Manager;
     private $Employee;
+    private $Admin;
+    private $Leave_Day_Form;
+    private $Department;
 
     public function __construct()
     {
         $this->User = $this->model("User");
         $this->Manager = $this->model("Manager");
         $this->Employee = $this->model("Employee");
+        $this->Admin = $this->model("Admin");
+        $this->Leave_Day_Form = $this->model("Leave_Day_Form");
+        $this->Department = $this->model("Department");
     }
 
     function index()

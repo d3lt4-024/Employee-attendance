@@ -3,7 +3,7 @@
 class Database
 {
     public $connect;
-    protected $dsn = "mysql:host=localhost:3306;dbname=Demo_DB";
+    protected $dsn = "mysql:host=localhost:3306;dbname=Demo_DB2";
     protected $username = "root";
     protected $password = "Vuphptit@24";
 

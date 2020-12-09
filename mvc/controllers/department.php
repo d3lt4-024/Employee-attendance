@@ -5,11 +5,19 @@ class department extends Controller
 {
     private $User;
     private $Manager;
+    private $Employee;
+    private $Admin;
+    private $Leave_Day_Form;
+    private $Department;
 
     public function __construct()
     {
         $this->User = $this->model("User");
         $this->Manager = $this->model("Manager");
+        $this->Employee = $this->model("Employee");
+        $this->Admin = $this->model("Admin");
+        $this->Leave_Day_Form = $this->model("Leave_Day_Form");
+        $this->Department = $this->model("Department");
     }
 
     function index()
@@ -21,11 +29,11 @@ class department extends Controller
 
     function view($Department_Number)
     {
-        if ($this->User->CheckValidDept($Department_Number) === true) {
+        if ($this->Department->CheckValidDept($Department_Number) === true) {
             if (isset($_SESSION["permission"])) {
                 if ($_SESSION["permission"] === "admin") {
                     $user_info = $this->User->GetInfoUserByID($_SESSION['user_id']);
-                    $result = $this->User->GetAllEmpInDept($Department_Number);
+                    $result = $this->Department->GetAllEmpInDept($Department_Number);
                     $Department_Name = $result[0]["Department_Name"];
                     $this->ViewWithPer("list-employee-department", "admin", [
                         "result" => $result,
@@ -35,7 +43,7 @@ class department extends Controller
                     exit();
                 } else if ($_SESSION["permission"] === "manager") {
                     $user_info = $this->Manager->GetManagerWithId($_SESSION['user_id']);
-                    $result = $this->User->GetEmpInDept($Department_Number);
+                    $result = $this->Department->GetEmpInDept($Department_Number);
                     $Department_Name = $result[0]["Department_Name"];
                     $this->ViewWithPer("list-employee-department", "manager", [
                         "result" => $result,

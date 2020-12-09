@@ -5,12 +5,18 @@ class api extends Controller
     private $User;
     private $Manager;
     private $Employee;
+    private $Admin;
+    private $Leave_Day_Form;
+    private $Department;
 
     public function __construct()
     {
         $this->User = $this->model("User");
         $this->Manager = $this->model("Manager");
         $this->Employee = $this->model("Employee");
+        $this->Admin = $this->model("Admin");
+        $this->Leave_Day_Form = $this->model("Leave_Day_Form");
+        $this->Department = $this->model("Department");
     }
 
     public function index()
@@ -18,11 +24,6 @@ class api extends Controller
         http_response_code(403);
         header('Location: /page-error-403.html');
         exit();
-    }
-
-    public function test()
-    {
-        echo json_encode(42);
     }
 
     public function GetSalaryMonth()
@@ -76,7 +77,7 @@ class api extends Controller
         if (isset($_SESSION["permission"])) {
             if ($_SESSION["permission"] === "admin") {
                 $acc_array = [];
-                $result = $this->User->GetFormStatusForJs();
+                $result = $this->Leave_Day_Form->GetFormStatusForJs();
                 foreach ($result as $key => $value) {
                     array_push($acc_array, intval($value["Amount"]));
                 }

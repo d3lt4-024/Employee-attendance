@@ -6,12 +6,18 @@ class delete extends Controller
     private $User;
     private $Manager;
     private $Employee;
+    private $Admin;
+    private $Leave_Day_Form;
+    private $Department;
 
     public function __construct()
     {
         $this->User = $this->model("User");
         $this->Manager = $this->model("Manager");
         $this->Employee = $this->model("Employee");
+        $this->Admin = $this->model("Admin");
+        $this->Leave_Day_Form = $this->model("Leave_Day_Form");
+        $this->Department = $this->model("Department");
     }
 
     function index()
@@ -106,10 +112,10 @@ class delete extends Controller
 
     function leave_day_form($IdForm)
     {
-        if ($this->User->CheckValidForm($IdForm) === true) {
+        if ($this->Form->CheckValidForm($IdForm) === true) {
             if (isset($_SESSION["permission"])) {
                 if ($_SESSION["permission"] === "admin") {
-                    $delete_result = $this->User->DeleteForm($IdForm);
+                    $delete_result = $this->Leave_Day_Form->DeleteForm($IdForm);
                     if ($delete_result === true) {
                         echo '<script type="text/javascript">';
                         echo 'alert("Delete successful");';  //success messenge
@@ -124,9 +130,9 @@ class delete extends Controller
                         exit();
                     }
                 } else if ($_SESSION["permission"] === "manager") {
-                    $result1 = $this->Manager->GetUserFromForm($IdForm);
+                    $result1 = $this->Leave_Day_Form->GetUserFromForm($IdForm);
                     if ($result1["IdAccount_Employess"] === $_SESSION['user_id']) {
-                        $delete_result = $this->Manager->DeleteForm($IdForm);
+                        $delete_result = $this->Leave_Day_Form->DeleteForm($IdForm);
                         if ($delete_result === true) {
                             echo '<script type="text/javascript">';
                             echo 'alert("Delete successful");';  //success messenge
@@ -140,8 +146,8 @@ class delete extends Controller
                             echo '</script>';
                             exit();
                         }
-                    } else if ($this->User->CheckValidEmployee($result1["IdAccount_Employess"]) === true) {
-                        $delete_result = $this->Manager->DeleteForm($IdForm);
+                    } else if ($this->Employee->CheckValidEmployee($result1["IdAccount_Employess"]) === true) { //if this is employee
+                        $delete_result = $this->Leave_Day_Form->DeleteForm($IdForm);
                         if ($delete_result === true) {
                             echo '<script type="text/javascript">';
                             echo 'alert("Delete successful");';  //success messenge
@@ -161,9 +167,9 @@ class delete extends Controller
                         exit();
                     }
                 } else if ($_SESSION ["permission"] === "employee") {
-                    $result1 = $this->Employee->GetUserFromForm($IdForm);
+                    $result1 = $this->Leave_Day_Form->GetUserFromForm($IdForm);
                     if ($result1["IdAccount_Employess"] === $_SESSION['user_id']) {
-                        $delete_result = $this->Employee->DeleteForm($IdForm);
+                        $delete_result = $this->Leave_Day_Form->DeleteForm($IdForm);
                         if ($delete_result === true) {
                             echo '<script type="text/javascript">';
                             echo 'alert("Delete successful");';  //success messenge
