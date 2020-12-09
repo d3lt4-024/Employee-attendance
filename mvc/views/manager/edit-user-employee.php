@@ -313,7 +313,7 @@
                                                             class="material-icons list-icon">lock_open</i></span>
                                                 <input class="form-control" name="Password"
                                                        placeholder="Password" type="password"
-                                                       value="<?php echo htmlspecialchars($data["default"]["Password"]); ?>">
+                                                       value="">
                                             </div>
                                         </div>
                                     </div>

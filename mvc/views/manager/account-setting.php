@@ -198,7 +198,7 @@
                                                             class="material-icons list-icon">lock_open</i>
                                                     <input class="form-control" id="l32" placeholder="Password"
                                                            type="password" name="Password"
-                                                           value="<?php echo htmlspecialchars($data["user_info"]["Password"]); ?>">
+                                                           value="">
                                                 </div>
                                                 <label for="l32">Password</label>
                                             </div>
