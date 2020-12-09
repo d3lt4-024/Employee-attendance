@@ -17,7 +17,7 @@ class delete extends Controller
         $this->Employee = $this->model("Employee");
         $this->Admin = $this->model("Admin");
         $this->Leave_Day_Form = $this->model("Leave_Day_Form");
-        $this->Department = $this->model("Department");
+        $this->Department = $this->model("Departments");
     }
 
     function index()
@@ -112,7 +112,7 @@ class delete extends Controller
 
     function leave_day_form($IdForm)
     {
-        if ($this->Form->CheckValidForm($IdForm) === true) {
+        if ($this->Leave_Day_Form->CheckValidForm($IdForm) === true) {
             if (isset($_SESSION["permission"])) {
                 if ($_SESSION["permission"] === "admin") {
                     $delete_result = $this->Leave_Day_Form->DeleteForm($IdForm);

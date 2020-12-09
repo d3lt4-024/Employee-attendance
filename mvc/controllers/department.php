@@ -1,6 +1,4 @@
 <?php
-
-
 class department extends Controller
 {
     private $User;
@@ -17,7 +15,7 @@ class department extends Controller
         $this->Employee = $this->model("Employee");
         $this->Admin = $this->model("Admin");
         $this->Leave_Day_Form = $this->model("Leave_Day_Form");
-        $this->Department = $this->model("Department");
+        $this->Department = $this->model("Departments");
     }
 
     function index()
