@@ -40,8 +40,8 @@ Then you need to download source code of GraphSQLi Lab and paste into C:\laragon
 ```
 <VirtualHost *:1002> 
     DocumentRoot "C:/laragon/www/Employee-attendance/"
-    ServerName GraphSQLi.test
-    ServerAlias *.GraphSQLi.test
+    ServerName Employee-attendance.test
+    ServerAlias *.Employee-attendance.test
     <Directory "C:/laragon/www/Employee-attendance/">
         Options Indexes FollowSymLinks
         AllowOverride All
